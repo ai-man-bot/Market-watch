@@ -1,46 +1,37 @@
 import os
 import datetime
-import requests
 
 def get_market_analysis():
-    # In a production environment, you would use an LLM API here 
-    # to process news from sources like Bloomberg, Reuters, or CNBC.
-    # For now, we generate the structured markdown template.
+    # This is the content that will be generated. 
+    # In the future, you can hook this up to an AI API.
     date_str = datetime.datetime.now().strftime("%B %d, %Y - %H:%M ET")
     
     markdown_content = f"""
-## Market Rundown: {date_str}
-
-### **Macro Context**
-* Summarized macro developments here...
-
-### **Economic Calendar**
-* Key events for the day...
-
-### **Earnings Reports**
-* Notable reports...
-
-### **Top Movers & Stocks in Play**
-* **TICKER**: Catalyst and intraday outlook...
-
-### **Broader Market Themes & Secondary Names**
-* Themes and fresh news...
-
-### **Week Ahead**
-* Upcoming events...
-"""
+    <div class="briefing">
+        <h2>Report: {date_str}</h2>
+        <p><strong>Macro Context:</strong> Market is showing resilience ahead of retail data...</p>
+        <p><strong>Top Movers:</strong> NVDA (+2.1%) on fresh AI demand; AAPL (-0.5%) on regulatory news.</p>
+        <hr>
+    </div>
+    """
     return markdown_content
 
-def update_html(new_markdown):
-    # Convert Markdown to HTML for the dashboard
-    new_report_html = f'<div class="briefing">\n<script>document.write(marked.parse(`{new_markdown}`));</script>\n</div>'
-    
+def update_html(new_html_snippet):
+    # Check if index.html exists, if not create a basic structure
+    if not os.path.exists("index.html"):
+        with open("index.html", "w") as f:
+            f.write('<html><body><h1>📈 Market Rundown Dashboard</h1><div id="content"><!-- INSERT_HERE --></div></body></html>')
+
     with open("index.html", "r") as f:
         content = f.read()
 
-    # Inject the new report right after the start tag
-    placeholder = "<!-- RUNDOWN_START -->"
-    updated_content = content.replace(placeholder, f"{placeholder}\n{new_report_html}")
+    # Place the new report at the TOP of the list
+    placeholder = "<!-- INSERT_HERE -->"
+    if placeholder in content:
+        updated_content = content.replace(placeholder, f"{placeholder}\n{new_html_snippet}")
+    else:
+        # Fallback if placeholder is missing
+        updated_content = content + new_html_snippet
 
     with open("index.html", "w") as f:
         f.write(updated_content)
