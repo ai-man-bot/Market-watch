@@ -1,0 +1,37 @@
+name: Update Daily Market Rundown
+
+on:
+  schedule:
+    # 8:30 AM ET is 12:30 UTC. 
+    # This runs at 12:30 UTC, then every hour until 20:30 UTC (4:30 PM ET)
+    - cron: '30 12 * * 1-5'
+    - cron: '0 13-20 * * 1-5'
+  workflow_dispatch: # Allows you to run it manually for testing
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run analysis
+        run: python main.py
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "Market-Bot"
+          git config --global user.email "actions@github.com"
+          git add index.html
+          git commit -m "Update Rundown: $(date)"
+          git push
